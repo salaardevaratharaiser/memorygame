@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s;
+        }
+
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-container button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .login-container button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .mode-selection {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .mode-selection button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .game-area {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .game-board-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+            min-height: 60vh;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 10px;
+            justify-content: center;
+            align-content: center;
+        }
+
+        .card {
+            width: 80px;
+            height: 80px;
+            perspective: 1000px; /* Add perspective for 3D effect */
+            position: relative;
+        }
+
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden; /* Hide the back face when flipped */
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            transition: transform 0.5s;
+        }
+
+        .card .front {
+            background-color: #fff; /* Front face color */
+        }
+
+        .card .back {
+            background-color: #f0f0f0; /* Back face color */
+            transform: rotateY(180deg); /* Initially rotate back face */
+        }
+
+        .card.flipped .front {
+            transform: rotateY(180deg); /* Flip front face */
+        }
+
+        .card.flipped .back {
+            transform: rotateY(0deg); /* Show back face */
+        }
+
+        .game-info {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d32f2f;
+            display: none;
+        }
+
+        .level-info {
+            font-size: 18px;
+        }
+
+        .quit-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .win-message, .timeup-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+
+        .win-message button, .timeup-message button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .timeup-message button {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body style="background-image: url('https://storage.googleapis.com/ibw-blog/media/cc/aa4f1540f302d3d5ccef1fabd850f7.jpeg')">
+    <div class="login-container" id="login-container">
+        <h1>Memory Game Login</h1>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="login-btn">Login</button>
+        <div class="error-message" id="error-message">Wrong username or password</div>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <div class="mode-selection" id="mode-selection">
+            <h2>Select Game Mode</h2>
+            <button id="easy-mode">Easy Mode</button>
+            <button id="hard-mode">Hard Mode</button>
+        </div>
+
+        <div class="game-area" id="game-area">
+            <div class="game-info" id="game-info">
+                <div class="level-info">Level: <span id="level-display">1</span></div>
+                <div class="timer" id="timer">Time: 0</div>
+                <button class="quit-btn" id="quit-btn">Quit</button>
+            </div>
+
+            <div class="game-board-container">
+                <div class="game-board" id="game-board"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="win-message" id="win-message">
+        <div id="win-text">You Won!</div>
+        <button id="next-level-btn">Next Level</button>
+    </div>
+
+    <div class="timeup-message" id="timeup-message">
+        <div>Time's Up!</div>
+        <button id="restart-btn">Restart Game</button>
+    </div>
+
+    <script>
+        // DOM elements
+        const loginContainer = document.getElementById('login-container');
+        const gameContainer = document.getElementById('game-container');
+        const modeSelection = document.getElementById('mode-selection');
+        const gameArea = document.getElementById('game-area');
+        const gameBoard = document.getElementById('game-board');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const errorMessage = document.getElementById('error-message');
+        const easyModeBtn = document.getElementById('easy-mode');
+        const hardModeBtn = document.getElementById('hard-mode');
+        const gameInfo = document.getElementById('game-info');
+        const timerDisplay = document.getElementById('timer');
+        const levelDisplay = document.getElementById('level-display');
+        const quitBtn = document.getElementById('quit-btn');
+        const winMessage = document.getElementById('win-message');
+        const winText = document.getElementById('win-text');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const timeupMessage = document.getElementById('timeup-message');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // Game variables
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let currentLevel = 1;
+        let gameMode = null;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        // Initialize the game
+        init();
+
+        function init() {
+            // Set up event listeners
+            loginBtn.addEventListener('click', handleLogin);
+            easyModeBtn.addEventListener('click', () => selectMode('easy'));
+            hardModeBtn.addEventListener('click', () => selectMode('hard'));
+            quitBtn.addEventListener('click', handleQuit);
+            nextLevelBtn.addEventListener('click', nextLevel);
+            restartBtn.addEventListener('click', restartGame);
+        }
+
+        function handleLogin() {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            if (username === 'admin' && password === '5247') {
+                loginContainer.style.display = 'none';
+                gameContainer.style.display = 'flex';
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        function selectMode(mode) {
+            gameMode = mode;
+            modeSelection.style.display = 'none';
+            gameArea.style.display = 'flex';
+            
+            if (mode === 'easy') {
+                document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1476231682828-37e571bc172f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')";
+                timerDisplay.style.display = 'none';
+            } else {
+                document.body.style.backgroundImage = "url('https://i.natgeofe.com/n/18f74223-81fc-413b-a247-9540b0a5c874/hawaii-volcanoes-national-park_2x1.jpg')";
+                timerDisplay.style.display = 'block';
+            }
+            
+            startGame();
+        }
+
+        function startGame() {
+            currentLevel = 1;
+            levelDisplay.textContent = currentLevel;
+            createBoard();
+        }
+
+        function createBoard() {
+            // Clear previous game
+            gameBoard.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            cards = [];
+            
+            // Calculate number of pairs based on level
+            const pairs = currentLevel + 1;
+            
+            // Create card values
+            let cardValues = [];
+            for (let i = 1; i <= pairs; i++) {
+                cardValues.push(i, i);
+            }
+            
+            // Shuffle cards
+            cardValues = shuffleArray(cardValues);
+            
+            // Calculate optimal grid columns
+            const columns = Math.min(4, Math.ceil(Math.sqrt(cardValues.length)));
+            gameBoard.style.gridTemplateColumns = `repeat(${columns}, 80px)`;
+            
+            // Create card elements
+            cardValues.forEach((value, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.value = value;
+                card.dataset.index = index;
+                card.addEventListener('click', flipCard);
+                
+                // Create front face
+                const frontFace = document.createElement('div');
+                frontFace.className = 'card-face front';
+                frontFace.textContent = ''; // Empty for the front face
+
+                // Create back face
+                const backFace = document.createElement('div');
+                backFace.className = 'card-face back';
+                backFace.textContent = value; // Show the value on the back face
+
+                card.appendChild(frontFace);
+                card.appendChild(backFace);
+                
+                gameBoard.appendChild(card);
+                cards.push({
+                    element: card,
+                    value: value,
+                    flipped: false,
+                    matched: false
+                });
+            });
+            
+            // Set timer for hard mode
+            if (gameMode === 'hard') {
+                timeLeft = pairs * 5;
+                timerDisplay.textContent = `Time: ${timeLeft}`;
+                startTimer();
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function flipCard() {
+            if (flippedCards.length >= 2) return;
+            
+            const index = parseInt(this.dataset.index);
+            const card = cards[index];
+            
+            if (card.flipped || card.matched) return;
+            
+            card.flipped = true;
+            card.element.classList.add('flipped');
+            flippedCards.push(card);
+            
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.value === card2.value) {
+                // Match found
+                card1.matched = true;
+                card2.matched = true;
+                matchedPairs++;
+                
+                // Check if all pairs are matched
+                const totalPairs = currentLevel + 1;
+                if (matchedPairs === totalPairs) {
+                    if (gameMode === 'hard') {
+                        clearInterval(timerInterval);
+                    }
+                    setTimeout(showWinMessage, 500);
+                }
+            } else {
+                // No match
+                setTimeout(() => {
+                    card1.flipped = false;
+                    card2.flipped = false;
+                    card1.element.classList.remove('flipped');
+                    card2.element.classList.remove('flipped');
+                }, 1000);
+            }
+            
+            flippedCards = [];
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Time: ${timeLeft}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showTimeUpMessage();
+                }
+            }, 1000);
+        }
+
+        function showWinMessage() {
+            winText.textContent = `You Won Level ${currentLevel}!`;
+            winMessage.style.display = 'block';
+        }
+
+        function showTimeUpMessage() {
+            timeupMessage.style.display = 'block';
+        }
+
+        function nextLevel() {
+            winMessage.style.display = 'none';
+            currentLevel++;
+            levelDisplay.textContent = currentLevel;
+            createBoard();
+        }
+
+        function restartGame() {
+            timeupMessage.style.display = 'none';
+            startGame();
+        }
+
+        function handleQuit() {
+            clearInterval(timerInterval);
+            modeSelection.style.display = 'block';
+            gameArea.style.display = 'none';
+            timerDisplay.style.display = 'none';a
+        }
+    </script>
+</body>
+</html>
