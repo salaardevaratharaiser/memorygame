@@ -1,0 +1,223 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOFvXKRrmtqAhWlz3zBxu1b",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/salaardevaratharaiser/memorygame/blob/main/image\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "zpoI3lhBXnHn",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "14bd2b2c-7ebb-4545-b88d-f51a9a692e09"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "WARNING:absl:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.\n"
+          ]
+        }
+      ],
+      "source": [
+        "from keras.models import load_model\n",
+        "model = load_model('/content/image-classifier (1).h5')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from keras.preprocessing import image"
+      ],
+      "metadata": {
+        "id": "OsrxcXr5kOky"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "img = image .load_img('/content/image-18.png',target_size=(32, 32))"
+      ],
+      "metadata": {
+        "id": "VWNn1mOtkOha"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from tensorflow.keras.preprocessing.image import ImageDataGenerator\n",
+        "ig = ImageDataGenerator(rescale=1./255)"
+      ],
+      "metadata": {
+        "id": "du191XndkOc6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from keras.preprocessing.image import img_to_array\n",
+        "import numpy as np"
+      ],
+      "metadata": {
+        "id": "nwKgOjR4kORj"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "from tensorflow.keras.preprocessing.image import ImageDataGenerator\n",
+        "img_array = img_to_array(img)\n",
+        "img_array = np.expand_dims(img_array, axis=0)\n",
+        "newing = ig.flow(img_array)"
+      ],
+      "metadata": {
+        "id": "68fNBw1TkYTi"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pred = model.predict(newing)\n",
+        "print(\"duo\" if pred[0][0] > 0.5 else \"single\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "89KymWnikYQ6",
+        "outputId": "e7a7b9a6-b384-42ed-936a-d83ae9cca365"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.11/dist-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:121: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.\n",
+            "  self._warn_if_super_not_called()\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m1/1\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m0s\u001b[0m 204ms/step\n",
+            "duo\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pred"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "nNR0pXrekYNy",
+        "outputId": "2eacdc10-e16f-4fa0-ece9-a961e5cbe7e8"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0.99999976]], dtype=float32)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "list(pred[0]).index(max(pred[0]))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uI9axve7kYKh",
+        "outputId": "d534171d-839e-475f-a12d-bf5961fa762f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"duo\"if pred[0][0]>0.5 else \"single\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "EqT-de8KkYHy",
+        "outputId": "b3ff54c6-85b6-4da7-a209-418a1eff5db6"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "duo\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
